@@ -3,7 +3,7 @@ import time, sys
 ARG = sys.argv[1]
 if ARG == 'test':
     M_VALUES = list(range(1,17))
-    K_MIN, K_MAX, N_MAX = 2, 16, 25
+    K_MIN, K_MAX, N_MAX = 2, 16, 20
 elif ARG[0] == '2':
     M_VALUES = [1,2,4]
     BOUNDS = {
@@ -11,7 +11,8 @@ elif ARG[0] == '2':
         '2_150K': (6, 14, 150000-1),
         '2_8K':   (16, 48, 8800-1),
         '2_571':  (50, 146, 571-1),
-        '2_43':   (148, 560, 43-1)
+        '2_43':   (148, 560, 43-1),
+        '2_small': (2, 40, 5000)
     }
     K_MIN, K_MAX, N_MAX = BOUNDS[ARG]
 elif ARG[0] == '3':
@@ -22,7 +23,19 @@ elif ARG[0] == '3':
         '3_150K': (10, 32, 150000-1),
         '3_8K':   (34, 114, 8800-1),
         '3_571':  (116, 344, 571-1),
-        '3_43':   (346, 1288, 43-1)
+        '3_43':   (346, 1288, 43-1),
+        '3_small': (2, 40, 5000)
+    }
+    K_MIN, K_MAX, N_MAX = BOUNDS[ARG]
+elif ARG[0] == '4':
+    M_VALUES = [1,4,16]
+    BOUNDS = {
+        '4_2M':   (2, 2, 2700000-1),
+        '4_150K': (4, 12, 150000-1),
+        '4_8K':   (14, 122, 8800-1),
+        '4_571':  (124, 1496, 571-1),
+        '4_43':   (1498, 62940, 43-1),
+        '4_small': (2, 200, 2000)
     }
     K_MIN, K_MAX, N_MAX = BOUNDS[ARG]
 else:
@@ -239,7 +252,7 @@ def test_a2_coeff(m):
 
 
 
-def find_all_vanishing_a2(m):
+def find_all_nonneg_a2(m):
     N100 = max(2, N_MAX//100) 
     t0 = time.time()
     for N in range(1, N_MAX+1):
@@ -250,9 +263,24 @@ def find_all_vanishing_a2(m):
             continue
         for k in range(K_MIN, K_MAX+1, 2):
             a2_coeff = get_a2_coeff(m,N,k)
-            if a2_coeff == 0:
-                print('Vanishing a2: ', m, N, k, '\t dim', get_trace(1,N,k))
+            if a2_coeff >= 0:
+                print('Non-Neg a2:  (m,N,k):', m, N, k, '\t dim', get_trace(1,N,k), ' \ta2:', a2_coeff)
 
+
+
+def find_all_nonpos_a2(m):
+    N100 = max(2, N_MAX//100) 
+    t0 = time.time()
+    for N in range(1, N_MAX+1):
+        if (N-1) % N100 == 0:
+            print('computing N =', N,  time.time() - t0)
+            t0 = time.time()
+        if gcd(N,m) != 1:
+            continue
+        for k in range(K_MIN, K_MAX+1, 2):
+            a2_coeff = get_a2_coeff(m,N,k)
+            if a2_coeff <= 0:
+                print('Non-Pos a2:  (m,N,k):', m, N, k, '\t dim', get_trace(1,N,k), ' \ta2:', a2_coeff)
 
 
 ##############################################################################
@@ -262,8 +290,10 @@ if ARG == 'test':
     for m in range(1,5):
         test_a2_coeff(m)
 elif ARG[0] == '2':
-    find_all_vanishing_a2(2)
+    find_all_nonneg_a2(2)
 elif ARG[0] == '3':
-    find_all_vanishing_a2(3)
+    find_all_nonneg_a2(3)
+elif ARG[0] == '4':
+    find_all_nonpos_a2(4)
 
 
